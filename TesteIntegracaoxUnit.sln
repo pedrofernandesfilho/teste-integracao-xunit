@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{4896C459-C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestesIntegracao", "test\TestesIntegracao\TestesIntegracao.csproj", "{F780C052-3517-4C12-8AF8-0E936B5226EB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3768BCAB-371D-4869-B5FA-6CF2C4517C4E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApi", "src\WebApi\WebApi.csproj", "{EA7564DA-7756-4BDC-9840-946E0B017F6C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +24,13 @@ Global
 		{F780C052-3517-4C12-8AF8-0E936B5226EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F780C052-3517-4C12-8AF8-0E936B5226EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F780C052-3517-4C12-8AF8-0E936B5226EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA7564DA-7756-4BDC-9840-946E0B017F6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA7564DA-7756-4BDC-9840-946E0B017F6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA7564DA-7756-4BDC-9840-946E0B017F6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA7564DA-7756-4BDC-9840-946E0B017F6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F780C052-3517-4C12-8AF8-0E936B5226EB} = {4896C459-CECA-41EF-B54B-F1735FA8E6CC}
+		{EA7564DA-7756-4BDC-9840-946E0B017F6C} = {3768BCAB-371D-4869-B5FA-6CF2C4517C4E}
 	EndGlobalSection
 EndGlobal
