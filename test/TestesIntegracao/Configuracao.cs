@@ -6,19 +6,19 @@ using Xunit;
 namespace TesteIntegracaoxUnit.TestesIntegracao;
 
 [CollectionDefinition(Nome)]
-public sealed class Colecao : ICollectionFixture<Fixture>
+public sealed class Colecao : ICollectionFixture<Configuracao>
 {
    public const string Nome = nameof(Colecao);
 }
 
-public sealed class Fixture : IDisposable
+public sealed class Configuracao : IDisposable
 {
-    public WebApplicationFactory<Program> AplicacaoWeb { get; }
+    internal WebApplicationFactory<Program> AplicacaoWeb { get; }
     public HttpClient ClienteHttp { get; }
 
-    public Fixture()
+    public Configuracao()
     {
-        const string urlApi = "http://localhost/api/";
+        const string urlApi = "http://localhost/";
 
         AplicacaoWeb = new WebApplicationFactory<Program>();
         ClienteHttp = AplicacaoWeb.CreateClient(new WebApplicationFactoryClientOptions
@@ -39,5 +39,5 @@ public class TesteBase
 {
     public HttpClient ClienteHttp { get; }
 
-    public TesteBase(Fixture fixture) => ClienteHttp = fixture.ClienteHttp;
+    public TesteBase(Configuracao fixture) => ClienteHttp = fixture.ClienteHttp;
 }
