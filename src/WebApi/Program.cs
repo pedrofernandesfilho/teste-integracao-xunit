@@ -7,6 +7,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSingleton<IDictionary<uint, string>>((serviceProvider) => new Dictionary<uint, string>());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
