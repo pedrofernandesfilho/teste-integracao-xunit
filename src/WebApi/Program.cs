@@ -1,3 +1,5 @@
+using TesteIntegracaoxUnit.WebApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,7 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IDictionary<uint, string>>((serviceProvider) => new Dictionary<uint, string>());
+builder.Services.AddSingleton<IList<TarefaModel>>((serviceProvider) => new List<TarefaModel>());
 
 var app = builder.Build();
 

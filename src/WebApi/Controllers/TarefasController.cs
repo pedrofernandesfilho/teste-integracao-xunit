@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TesteIntegracaoxUnit.WebApi.Models;
 
 namespace TesteIntegracaoxUnit.WebApi;
 
@@ -6,16 +7,18 @@ namespace TesteIntegracaoxUnit.WebApi;
 [Route("[controller]")]
 public class TarefasController : ControllerBase
 {
-    private readonly IDictionary<uint, string> tarefas;
+    private readonly IList<TarefaModel> tarefas;
 
-    public TarefasController(IDictionary<uint, string> tarefas) => this.tarefas = tarefas;
+    public TarefasController(IList<TarefaModel> tarefas) => this.tarefas = tarefas;
 
     [HttpGet("{id:min(1)}")]
-    public ActionResult<string> Get(uint id)
+    public ActionResult<TarefaModel> Get(ulong id)
     {
-        if (!tarefas.ContainsKey(id))
+        var tarefa = tarefas.FirstOrDefault(tarefa => tarefa.Id == id);
+
+        if (tarefa is null)
             return NotFound();
 
-        return Ok(tarefas[id]);
+        return Ok(tarefa);
     }
 }
