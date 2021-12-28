@@ -2,6 +2,14 @@
 
 Exemplo de setup de teste de integração com xUnit
 
+## Aplicação Lista de tarefas
+
+A aplicação criada para o exemplo é de uma lista de tarefas. Onde, inicialmente, pode-se:
+- Criar uma tarefa
+- Excluir uma tarefa
+- Recuperar uma lisa de tarefas
+- Marcar uma tarefa como feita
+
 ## Características
 - .NET 6
 - xUnit
