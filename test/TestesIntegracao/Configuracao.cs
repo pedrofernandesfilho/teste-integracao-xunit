@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using TesteIntegracaoxUnit.WebApi.Models;
 using Xunit;
 
 namespace TesteIntegracaoxUnit.TestesIntegracao;
@@ -15,49 +17,80 @@ public sealed class Colecao : ICollectionFixture<Configuracao>
 
 public sealed class Configuracao : IAsyncDisposable
 {
-    private readonly IServiceScope serviceScope;
+    private readonly BaseDados baseDados;
 
-    internal WebApplicationFactory<Program> AplicacaoWeb { get; }
+    internal WebApplicationFactory<Program> Api { get; }
     public HttpClient ClienteHttp { get; }
-    public IServiceProvider ServiceProvider { get; }
+    public IServiceScope ServiceScope { get; set; }
+    public IServiceProvider ServiceProvider { get; set; }
 
+
+    // EXECUTADO 1 VEZ ANTES DE TODOS OS TESTES
     public Configuracao()
     {
         const string urlApi = "http://localhost/";
 
-        AplicacaoWeb = new WebApplicationFactory<Program>();
+        Api = new WebApplicationFactory<Program>();
 
-        ClienteHttp = AplicacaoWeb.CreateClient(new WebApplicationFactoryClientOptions
+        ClienteHttp = Api.CreateClient(new WebApplicationFactoryClientOptions
         {
             BaseAddress = new Uri(urlApi)
         });
 
-        serviceScope = AplicacaoWeb.Services.CreateScope();
-        ServiceProvider = serviceScope.ServiceProvider;
+        ServiceScope = Api.Services.CreateScope();
+        ServiceProvider = ServiceScope.ServiceProvider;
+
+        baseDados = new BaseDados(ServiceProvider);
     }
 
+    // EXECUTADO 1 VEZ DEPOIS DE TODOS OS TESTES
     public async ValueTask DisposeAsync()
     {
         ClienteHttp.Dispose();
 
-        if (serviceScope is IAsyncDisposable asyncDisposableScope)
+        if (ServiceScope is IAsyncDisposable asyncDisposableScope)
             await asyncDisposableScope.DisposeAsync();
         else
-            serviceScope.Dispose();
+            ServiceScope.Dispose();
 
-        AplicacaoWeb.Dispose();
+        Api.Dispose();
     }
+
+    public void RestaurarDadosDaBase() => baseDados.RestaurarDados();
+}
+
+public sealed class PreparacaoClasseTeste : IDisposable
+{
+    // EXECUTADO 1 VEZ ANTES DE TODOS OS TESTES DE UMA CLASSE DE TESTE
+    public PreparacaoClasseTeste(Configuracao configuracao)
+    {
+        configuracao.ServiceScope = configuracao.Api.Services.CreateScope();
+        configuracao.ServiceProvider = configuracao.ServiceScope.ServiceProvider;
+    }
+
+    // EXECUTADO 1 VEZ DEPOIS DE TODOS OS TESTES DE UMA CLASSE DE TESTE
+    public void Dispose() { }
 }
 
 [Collection(Colecao.Nome)]
-public class TesteBase
+public abstract class TesteBase : IDisposable, IClassFixture<PreparacaoClasseTeste>
 {
-    public HttpClient ClienteHttp { get; }
-    public IServiceProvider ServiceProvider { get ; }
+    // EXECUTADO ANTES DE CADA TESTE (1 VEZ POR TESTE)
+    protected TesteBase() { }
 
-    public TesteBase(Configuracao fixture)
+    // EXECUTADO DEPOIS DE CADA TESTE (1 VEZ POR TESTE)
+    public void Dispose() { }
+}
+
+public sealed class BaseDados
+{
+    private readonly IServiceProvider serviceProvider;
+
+    public BaseDados(IServiceProvider serviceProvider) => this.serviceProvider = serviceProvider;
+
+    public void RestaurarDados()
     {
-        ClienteHttp = fixture.ClienteHttp;
-        ServiceProvider = fixture.ServiceProvider;
+        var tarefas = serviceProvider.GetRequiredService<IList<TarefaModel>>();
+        tarefas.Clear();
     }
 }

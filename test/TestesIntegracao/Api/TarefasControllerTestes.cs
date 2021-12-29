@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -12,52 +11,106 @@ namespace TesteIntegracaoxUnit.TestesIntegracao.Api;
 
 public class TarefasControllerTestes
 {
-    public class DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaCadastradaInformandoOIdentificador : TesteBase, IDisposable
+    public class PreparacaoGetId
     {
-        private readonly TarefaModel tarefaEsperada;
-        private HttpResponseMessage respostaHttp = default!;
+        public readonly TarefaModel TarefaEsperada;
 
-        public DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaCadastradaInformandoOIdentificador(Configuracao fixture) : base(fixture)
+        public PreparacaoGetId(Configuracao configuracao)
         {
-            tarefaEsperada = new TarefaModel(2, "Tarefa 2 do teste", true);
+            configuracao.RestaurarDadosDaBase();
 
-            var tarefas = ServiceProvider.GetRequiredService<IList<TarefaModel>>();
+            TarefaEsperada = new TarefaModel(2, "Tarefa 2 do teste", true);
+
+            var tarefas = configuracao.ServiceProvider.GetRequiredService<IList<TarefaModel>>();
             tarefas.Add(new TarefaModel(1, "Tarefa 1 do teste", false));
-            tarefas.Add(tarefaEsperada);
+            tarefas.Add(TarefaEsperada);
             tarefas.Add(new TarefaModel(3, "Tarefa 3 do teste", false));
-
-            Task.Run( async () => {
-                respostaHttp = await ClienteHttp.GetAsync("Tarefas/2");
-            }).Wait();
         }
+    }
 
-        [Fact]
-        public async Task DeverRetorarAsInformacoesDaTarefa()
+    public class RequisicaoTarefaExistente : PreparacaoGetId, IAsyncLifetime
+    {
+        public HttpResponseMessage RespostaHttp = default!;
+        private readonly Configuracao configuracao;
+
+        public RequisicaoTarefaExistente(Configuracao configuracao) : base(configuracao) =>
+            this.configuracao = configuracao;
+
+        public async Task InitializeAsync() =>
+            RespostaHttp = await configuracao.ClienteHttp.GetAsync("Tarefas/2");
+
+        public Task DisposeAsync()
         {
-            var respostaConteudo = await respostaHttp.Content.ReadAsStringAsync();
-            var tarefaRetornada =
-                JsonSerializer.Deserialize<TarefaModel>(respostaConteudo,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                );
-
-            Assert.Equal(tarefaEsperada, tarefaRetornada);
+            RespostaHttp.Dispose();
+            return Task.CompletedTask;
         }
+    }
+
+    public class DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaCadastradaInformandoOIdentificador : TesteBase, IClassFixture<RequisicaoTarefaExistente>
+    {
+        private readonly RequisicaoTarefaExistente requisicaoTarefaExistente;
+
+        public DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaCadastradaInformandoOIdentificador(RequisicaoTarefaExistente requisicaoTarefaExistente) =>
+            this.requisicaoTarefaExistente = requisicaoTarefaExistente;
 
         [Fact]
         public void DeveRetornarEstadoOk() =>
-            Assert.Equal(HttpStatusCode.OK, respostaHttp.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, requisicaoTarefaExistente.RespostaHttp.StatusCode);
 
+        [Fact]
+        public async ValueTask DeverRetorarAsInformacoesDaTarefa()
+        {
+            var respostaConteudo = await requisicaoTarefaExistente.RespostaHttp.Content.ReadAsStringAsync();
 
-        public void Dispose() => respostaHttp.Dispose();
+            var tarefaEsperadaJson =
+                JsonSerializer.Serialize<TarefaModel>(
+                    requisicaoTarefaExistente.TarefaEsperada,
+                    new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+            Assert.Equal(tarefaEsperadaJson, respostaConteudo);
+        }
     }
 
-    // [Fact]
-    // public async Task DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaNaoCadastradaInformandoOIdentificador_DeverRetorarNaoEncontrado()
-    // {
-    //     const HttpStatusCode respostaEsperada = HttpStatusCode.NotFound;
-        
-    //     using var resposta = await ClienteHttp.GetAsync("Tarefas/20");
+    public class RequisicaoTarefaInexistente : PreparacaoGetId, IAsyncLifetime
+    {
+        public HttpResponseMessage RespostaHttp = default!;
+        private readonly Configuracao configuracao;
 
-    //     Assert.Equal(respostaEsperada, resposta.StatusCode);
-    // }
+        public RequisicaoTarefaInexistente(Configuracao configuracao) : base(configuracao) =>
+            this.configuracao = configuracao;
+
+        public async Task InitializeAsync() =>
+            RespostaHttp = await configuracao.ClienteHttp.GetAsync("Tarefas/20");
+
+        public Task DisposeAsync()
+        {
+            RespostaHttp.Dispose();
+            return Task.CompletedTask;
+        }
+    }
+
+    public class DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaNaoCadastradaInformandoOIdentificador : TesteBase, IClassFixture<RequisicaoTarefaInexistente>
+    {
+        private readonly RequisicaoTarefaInexistente requisicaoTarefaInexistente;
+
+        public DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaNaoCadastradaInformandoOIdentificador(RequisicaoTarefaInexistente requisicaoTarefaInexistente) =>
+            this.requisicaoTarefaInexistente = requisicaoTarefaInexistente;
+
+        [Fact]
+        public void DeverRetorarEstadoNaoEncontrado() =>
+            Assert.Equal(HttpStatusCode.NotFound, requisicaoTarefaInexistente.RespostaHttp.StatusCode);
+
+        [Fact]
+        public async ValueTask NaoDeveRetornarInformacoesDeTarefa()
+        {
+            var tarefaEsperadaSemDados = new TarefaModel(default, default!, default);
+
+            var respostaConteudo = await requisicaoTarefaInexistente.RespostaHttp.Content.ReadAsStringAsync();
+            var tarefaRetornada = 
+                JsonSerializer.Deserialize<TarefaModel>(respostaConteudo,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            Assert.Equal(tarefaEsperadaSemDados, tarefaRetornada);
+        }
+    }
 }
