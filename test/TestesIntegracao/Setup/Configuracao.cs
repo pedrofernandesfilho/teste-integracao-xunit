@@ -1,13 +1,11 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using TesteIntegracaoxUnit.WebApi.Models;
 using Xunit;
 
-namespace TesteIntegracaoxUnit.TestesIntegracao;
+namespace TesteIntegracaoxUnit.TestesIntegracao.Setup;
 
 [CollectionDefinition(Nome)]
 public sealed class Colecao : ICollectionFixture<Configuracao>
@@ -15,7 +13,7 @@ public sealed class Colecao : ICollectionFixture<Configuracao>
    public const string Nome = nameof(Colecao);
 }
 
-public sealed class Configuracao : IAsyncDisposable
+public sealed class Configuracao : IAsyncLifetime
 {
     private readonly BaseDados baseDados;
 
@@ -43,8 +41,11 @@ public sealed class Configuracao : IAsyncDisposable
         baseDados = new BaseDados(ServiceProvider);
     }
 
+    // EXECUTADO 1 VEZ ANTES DE TODOS OS TESTES, APÓS O CONSTRUTOR
+    public Task InitializeAsync() => Task.CompletedTask;
+
     // EXECUTADO 1 VEZ DEPOIS DE TODOS OS TESTES
-    public async ValueTask DisposeAsync()
+    public async Task DisposeAsync()
     {
         ClienteHttp.Dispose();
 
@@ -80,17 +81,4 @@ public abstract class TesteBase : IDisposable, IClassFixture<PreparacaoClasseTes
 
     // EXECUTADO DEPOIS DE CADA TESTE (1 VEZ POR TESTE)
     public void Dispose() { }
-}
-
-public sealed class BaseDados
-{
-    private readonly IServiceProvider serviceProvider;
-
-    public BaseDados(IServiceProvider serviceProvider) => this.serviceProvider = serviceProvider;
-
-    public void RestaurarDados()
-    {
-        var tarefas = serviceProvider.GetRequiredService<IList<TarefaModel>>();
-        tarefas.Clear();
-    }
 }

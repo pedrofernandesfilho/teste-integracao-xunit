@@ -1,21 +1,23 @@
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using TesteIntegracaoxUnit.TestesIntegracao.Setup;
 using TesteIntegracaoxUnit.WebApi.Models;
 using Xunit;
 
 namespace TesteIntegracaoxUnit.TestesIntegracao.Api;
 
-public class TarefasControllerTestes
+public class TarefasControllerObterPorIdTestes
 {
-    public class PreparacaoGetId
+    public class PreparacaoDeDados : IDisposable
     {
         public readonly TarefaModel TarefaEsperada;
 
-        public PreparacaoGetId(Configuracao configuracao)
+        public PreparacaoDeDados(Configuracao configuracao)
         {
             configuracao.RestaurarDadosDaBase();
 
@@ -26,9 +28,11 @@ public class TarefasControllerTestes
             tarefas.Add(TarefaEsperada);
             tarefas.Add(new TarefaModel(3, "Tarefa 3 do teste", false));
         }
+
+        public void Dispose() { }
     }
 
-    public class RequisicaoTarefaExistente : PreparacaoGetId, IAsyncLifetime
+    public class RequisicaoTarefaExistente : PreparacaoDeDados, IAsyncLifetime
     {
         public HttpResponseMessage RespostaHttp = default!;
         private readonly Configuracao configuracao;
@@ -71,7 +75,7 @@ public class TarefasControllerTestes
         }
     }
 
-    public class RequisicaoTarefaInexistente : PreparacaoGetId, IAsyncLifetime
+    public class RequisicaoTarefaInexistente : PreparacaoDeDados, IAsyncLifetime
     {
         public HttpResponseMessage RespostaHttp = default!;
         private readonly Configuracao configuracao;
