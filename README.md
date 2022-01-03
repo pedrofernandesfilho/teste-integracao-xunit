@@ -7,8 +7,7 @@ Exemplo de setup de teste de integração com xUnit
 A aplicação criada para o exemplo é de uma lista de tarefas. Onde, inicialmente, pode-se:
 - Criar uma tarefa
 - Excluir uma tarefa
-- Recuperar uma lisa de tarefas
-- Marcar uma tarefa como feita
+- Recuperar uma tarefa pelo identificador
 
 ## Características
 - .NET 6
@@ -19,7 +18,7 @@ A aplicação criada para o exemplo é de uma lista de tarefas. Onde, inicialmen
 Para executar os testes no terminal navegue até o diretório raiz do repositório e execute:
 
 ```bash
-dotnet teste
+dotnet test
 ```
 
 ## Aplicação Web API
