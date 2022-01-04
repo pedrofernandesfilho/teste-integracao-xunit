@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Net.Http;
@@ -8,32 +7,27 @@ using Xunit;
 namespace TesteIntegracaoxUnit.TestesIntegracao.Setup;
 
 [CollectionDefinition(Nome)]
-public sealed class Colecao : ICollectionFixture<Configuracao>
+public sealed class Colecao : ICollectionFixture<Aplicacao>
 {
    public const string Nome = nameof(Colecao);
 }
 
-public sealed class Configuracao : IAsyncLifetime
+public sealed class Aplicacao : IAsyncLifetime
 {
     private readonly BaseDados baseDados;
 
-    internal WebApplicationFactory<Program> Api { get; }
+    internal WebApi Api { get; }
     public HttpClient ClienteHttp { get; }
     public IServiceScope ServiceScope { get; set; }
     public IServiceProvider ServiceProvider { get; set; }
 
 
     // EXECUTADO 1 VEZ ANTES DE TODOS OS TESTES
-    public Configuracao()
+    public Aplicacao()
     {
-        const string urlApi = "http://localhost/";
+        Api = new WebApi();
 
-        Api = new WebApplicationFactory<Program>();
-
-        ClienteHttp = Api.CreateClient(new WebApplicationFactoryClientOptions
-        {
-            BaseAddress = new Uri(urlApi)
-        });
+        ClienteHttp = Api.ClienteHttp;
 
         ServiceScope = Api.Services.CreateScope();
         ServiceProvider = ServiceScope.ServiceProvider;
@@ -63,10 +57,10 @@ public sealed class Configuracao : IAsyncLifetime
 public sealed class PreparacaoClasseTeste : IDisposable
 {
     // EXECUTADO 1 VEZ ANTES DE TODOS OS TESTES DE UMA CLASSE DE TESTE
-    public PreparacaoClasseTeste(Configuracao configuracao)
+    public PreparacaoClasseTeste(Aplicacao aplicacao)
     {
-        configuracao.ServiceScope = configuracao.Api.Services.CreateScope();
-        configuracao.ServiceProvider = configuracao.ServiceScope.ServiceProvider;
+        aplicacao.ServiceScope = aplicacao.Api.Services.CreateScope();
+        aplicacao.ServiceProvider = aplicacao.ServiceScope.ServiceProvider;
     }
 
     // EXECUTADO 1 VEZ DEPOIS DE TODOS OS TESTES DE UMA CLASSE DE TESTE

@@ -18,8 +18,14 @@ public class TarefasControllerCriarTestes : TesteBase
             throw new System.NotImplementedException();
         }
     }
-    //jpublic class DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaCadastradaInformandoOIdentificador : TesteBase, IClassFixture<RequisicaoTarefaExistente>
 
-    //[Fact]
-    //public void Teste1() { }
+    public class DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaCadastradaInformandoOIdentificador : TesteBase, IClassFixture<Requisicao>
+    {
+        public DadoQueExistemTarefasCadastradas_QuandoSolicitarUmaTarefaCadastradaInformandoOIdentificador()
+        {
+        }
+
+        //[Fact]
+        //public void Teste1() { }
+    }
 }

@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -13,35 +12,29 @@ namespace TesteIntegracaoxUnit.TestesIntegracao.Api;
 
 public class TarefasControllerObterPorIdTestes
 {
-    public class PreparacaoDeDados : IDisposable
+    public class RequisicaoTarefaExistente : IAsyncLifetime
     {
-        public readonly TarefaModel TarefaEsperada;
+        private readonly Aplicacao aplicacao;
 
-        public PreparacaoDeDados(Configuracao configuracao)
+        public readonly TarefaModel TarefaEsperada;
+        public HttpResponseMessage RespostaHttp = default!;
+
+        public RequisicaoTarefaExistente(Aplicacao aplicacao)
         {
-            configuracao.RestaurarDadosDaBase();
+            this.aplicacao = aplicacao;
+
+            aplicacao.RestaurarDadosDaBase();
 
             TarefaEsperada = new TarefaModel(2, "Tarefa 2 do teste", true);
 
-            var tarefas = configuracao.ServiceProvider.GetRequiredService<IList<TarefaModel>>();
+            var tarefas = aplicacao.ServiceProvider.GetRequiredService<IList<TarefaModel>>();
             tarefas.Add(new TarefaModel(1, "Tarefa 1 do teste", false));
             tarefas.Add(TarefaEsperada);
             tarefas.Add(new TarefaModel(3, "Tarefa 3 do teste", false));
         }
 
-        public void Dispose() { }
-    }
-
-    public class RequisicaoTarefaExistente : PreparacaoDeDados, IAsyncLifetime
-    {
-        public HttpResponseMessage RespostaHttp = default!;
-        private readonly Configuracao configuracao;
-
-        public RequisicaoTarefaExistente(Configuracao configuracao) : base(configuracao) =>
-            this.configuracao = configuracao;
-
         public async Task InitializeAsync() =>
-            RespostaHttp = await configuracao.ClienteHttp.GetAsync("Tarefas/2");
+            RespostaHttp = await aplicacao.ClienteHttp.GetAsync("Tarefas/2");
 
         public Task DisposeAsync()
         {
@@ -75,16 +68,20 @@ public class TarefasControllerObterPorIdTestes
         }
     }
 
-    public class RequisicaoTarefaInexistente : PreparacaoDeDados, IAsyncLifetime
+    public class RequisicaoTarefaInexistente : IAsyncLifetime
     {
         public HttpResponseMessage RespostaHttp = default!;
-        private readonly Configuracao configuracao;
+        private readonly Aplicacao aplicacao;
 
-        public RequisicaoTarefaInexistente(Configuracao configuracao) : base(configuracao) =>
-            this.configuracao = configuracao;
+        public RequisicaoTarefaInexistente(Aplicacao aplicacao)
+        {
+            this.aplicacao = aplicacao;
+
+            aplicacao.RestaurarDadosDaBase();
+        }
 
         public async Task InitializeAsync() =>
-            RespostaHttp = await configuracao.ClienteHttp.GetAsync("Tarefas/20");
+            RespostaHttp = await aplicacao.ClienteHttp.GetAsync("Tarefas/20");
 
         public Task DisposeAsync()
         {
